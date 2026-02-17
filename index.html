@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="EVE — AI-powered chat assistant. Modern, intelligent, always available."/>
+  <title>EVE — AI Chat Assistant</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous"/>
+
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/chat.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     CURSOR
+═══════════════════════════════════════ -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- ═══════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <span class="logo-e">E</span><span class="logo-ve">VE</span>
+      <span class="logo-tag">AI</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#tech">Tech Stack</a></li>
+    </ul>
+    <a href="#demo" class="nav-cta">Try EVE <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO
+═══════════════════════════════════════ -->
+<section id="hero">
+  <!-- Animated grid background -->
+  <div class="hero-grid"></div>
+
+  <!-- Floating orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      AI-Powered · Always Online
+    </div>
+
+    <h1 class="hero-title">
+      Meet <span class="title-eve">EVE</span><br/>
+      <span class="title-sub">Your Intelligent<br/>Chat Companion</span>
+    </h1>
+
+    <p class="hero-desc">
+      A blazing-fast AI chatbot built with vanilla JavaScript
+      and powered by Anthropic Claude. Zero dependencies,
+      maximum intelligence.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#demo" class="btn-primary">
+        <span>Start Chatting</span>
+        <i class="fa-solid fa-comments"></i>
+      </a>
+      <a href="https://github.com" target="_blank" class="btn-ghost">
+        <i class="fa-brands fa-github"></i>
+        <span>View on GitHub</span>
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num" data-target="99">0</span><span>%</span>
+        <span class="stat-label">Uptime</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num" data-target="10">0</span><span>+</span>
+        <span class="stat-label">Upgrades</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num" data-target="0">0</span><span>ms</span>
+        <span class="stat-label">Dependencies</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero chat preview mockup -->
+  <div class="hero-visual">
+    <div class="mockup-window">
+      <div class="mockup-bar">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="mockup-title">EVE — AI Assistant</span>
+      </div>
+      <div class="mockup-chat">
+        <div class="mock-msg bot anim-1">
+          <div class="mock-av">E</div>
+          <div class="mock-bubble">Hey! I'm EVE 👋 How can I help you today?</div>
+        </div>
+        <div class="mock-msg user anim-2">
+          <div class="mock-bubble">Tell me something cool!</div>
+        </div>
+        <div class="mock-msg bot anim-3">
+          <div class="mock-av">E</div>
+          <div class="mock-bubble">Did you know honey never spoils? Archaeologists found 3000-year-old honey in Egyptian tombs — still perfectly edible! 🍯</div>
+        </div>
+        <div class="mock-msg user anim-4">
+          <div class="mock-bubble">Wow, that's wild! 🤯</div>
+        </div>
+        <div class="mock-typing anim-5">
+          <div class="mock-av">E</div>
+          <div class="mock-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Floating badges -->
+    <div class="float-badge badge-a">
+      <i class="fa-solid fa-brain"></i> Anthropic Claude
+    </div>
+    <div class="float-badge badge-b">
+      <i class="fa-solid fa-bolt"></i> &lt;1s Response
+    </div>
+    <div class="float-badge badge-c">
+      <i class="fa-solid fa-shield-halved"></i> XSS Safe
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FEATURES
+═══════════════════════════════════════ -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">What's inside</div>
+    <h2 class="section-title">Built Different.<br/>Engineered to Impress.</h2>
+
+    <div class="features-grid">
+
+      <div class="feat-card card-wide">
+        <div class="feat-icon"><i class="fa-solid fa-brain"></i></div>
+        <h3>AI-Powered Intelligence</h3>
+        <p>Powered by Anthropic's Claude API with full conversation context memory. Understands nuance, tone, and intent — not just keywords.</p>
+        <div class="feat-tag">Anthropic Claude</div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-database"></i></div>
+        <h3>Persistent Memory</h3>
+        <p>Chat history saved to localStorage. Your conversations survive page refreshes.</p>
+        <div class="feat-tag">localStorage</div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>XSS Protected</h3>
+        <p>All user input rendered via textContent — never innerHTML. Zero injection risk.</p>
+        <div class="feat-tag">Security</div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-ellipsis"></i></div>
+        <h3>Typing Indicator</h3>
+        <p>Realistic animated dots while the AI formulates its response. Feels alive.</p>
+        <div class="feat-tag">UX Polish</div>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-clock"></i></div>
+        <h3>Per-Message Timestamps</h3>
+        <p>Every bubble shows its exact send time. Copy any message with one click.</p>
+        <div class="feat-tag">Detail</div>
+      </div>
+
+      <div class="feat-card card-wide">
+        <div class="feat-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+        <h3>Fully Responsive</h3>
+        <p>Pixel-perfect on desktop, tablet, and mobile. FAB button, slide-up panel, full-screen mobile mode — every breakpoint handled.</p>
+        <div class="feat-tag">Responsive</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     DEMO SECTION
+═══════════════════════════════════════ -->
+<section id="demo">
+  <div class="section-inner demo-inner">
+    <div class="demo-text">
+      <div class="section-label">Live Demo</div>
+      <h2 class="section-title">Talk to EVE<br/>Right Now.</h2>
+      <p class="demo-desc">No signup. No install. Just click the chat button in the bottom-right corner and start a conversation with EVE.</p>
+      <ul class="demo-hints">
+        <li><i class="fa-solid fa-circle-check"></i> Ask anything</li>
+        <li><i class="fa-solid fa-circle-check"></i> Play rock-paper-scissors</li>
+        <li><i class="fa-solid fa-circle-check"></i> Request a joke</li>
+        <li><i class="fa-solid fa-circle-check"></i> Clear & restart anytime</li>
+      </ul>
+      <button class="btn-primary" onclick="openChat()">
+        <span>Open Chat</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+    <div class="demo-visual">
+      <div class="demo-phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-header">
+            <div class="phone-av">E</div>
+            <div>
+              <div class="phone-name">EVE</div>
+              <div class="phone-status"><span></span> Online</div>
+            </div>
+          </div>
+          <div class="phone-msgs" id="phone-msgs">
+            <div class="phone-msg bot">Hey! What's on your mind? 🤖</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     TECH STACK
+═══════════════════════════════════════ -->
+<section id="tech">
+  <div class="section-inner">
+    <div class="section-label">Under the hood</div>
+    <h2 class="section-title">Pure Craft.<br/>No Framework Needed.</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <i class="fa-brands fa-html5"></i>
+        <span>HTML5</span>
+      </div>
+      <div class="tech-card">
+        <i class="fa-brands fa-css3-alt"></i>
+        <span>CSS3</span>
+      </div>
+      <div class="tech-card">
+        <i class="fa-brands fa-js"></i>
+        <span>Vanilla JS</span>
+      </div>
+      <div class="tech-card tech-highlight">
+        <i class="fa-solid fa-robot"></i>
+        <span>Claude API</span>
+      </div>
+      <div class="tech-card">
+        <i class="fa-solid fa-database"></i>
+        <span>localStorage</span>
+      </div>
+      <div class="tech-card">
+        <i class="fa-brands fa-font-awesome"></i>
+        <span>Font Awesome</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════ -->
+<footer id="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <span class="logo-e">E</span><span class="logo-ve">VE</span>
+    </div>
+    <p class="footer-copy">Built with passion. Powered by Anthropic Claude.</p>
+    <div class="footer-links">
+      <a href="https://github.com" target="_blank"><i class="fa-brands fa-github"></i></a>
+      <a href="https://linkedin.com" target="_blank"><i class="fa-brands fa-linkedin"></i></a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     CHAT WIDGET
+═══════════════════════════════════════ -->
+<button id="fab-btn" title="Chat with EVE" aria-label="Open chat">
+  <i class="fa-solid fa-robot" id="fab-icon"></i>
+  <span id="unread-badge" class="hidden" aria-hidden="true">1</span>
+</button>
+
+<div id="chat-window" role="dialog" aria-label="Chat with EVE" aria-hidden="true">
+  <div class="chat-header">
+    <div class="avatar">E</div>
+    <div class="header-info">
+      <div class="bot-name">EVE <span class="version-tag">v2.0</span></div>
+      <div class="bot-status"><span class="status-dot"></span>Online · AI-Powered</div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" id="clear-btn" title="Clear chat"><i class="fa-solid fa-rotate-left"></i></button>
+      <button class="header-btn" id="close-btn" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <div id="messages" role="log" aria-live="polite">
+    <div class="date-divider" id="date-label"></div>
+    <div id="typing-indicator" aria-label="EVE is typing">
+      <div class="msg-avatar">E</div>
+      <div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-replies" id="quick-replies">
+    <button class="chip" onclick="sendQuick('Who are you?')">🤖 Who are you?</button>
+    <button class="chip" onclick="sendQuick('Tell me a joke')">😂 Joke</button>
+    <button class="chip" onclick="sendQuick('What can you do?')">⚡ Capabilities</button>
+    <button class="chip" onclick="sendQuick('rock')">✊ Play RPS</button>
+  </div>
+
+  <div class="chat-footer">
+    <div class="input-wrapper">
+      <input id="textInput" type="text" placeholder="Message EVE…" autocomplete="off" maxlength="500" aria-label="Type a message"/>
+      <div class="input-actions">
+        <button class="action-btn" id="heart-btn" title="Send heart">❤️</button>
+        <button class="action-btn send" id="send-btn" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+    <div class="powered-by">Powered by <span>Anthropic Claude</span></div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="script/response.js"></script>
+<script src="script/chat.js"></script>
+<script src="script/landing.js"></script>
+</body>
+</html>
