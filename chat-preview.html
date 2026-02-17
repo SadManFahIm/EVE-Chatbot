@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EVE AI Chat v2.0 — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* Design Tokens */
+:root {
+  --eve-cyan:#00e5ff; --eve-violet:#7B2FBE; --eve-violet-deep:#5a1a9a;
+  --eve-cyan-dim:rgba(0,229,255,.12); --eve-violet-dim:rgba(123,47,190,.12);
+  --surface-0:rgba(8,8,18,.97); --surface-1:rgba(14,14,28,.92);
+  --surface-2:rgba(22,22,40,.85); --surface-glass:rgba(255,255,255,.03);
+  --surface-hover:rgba(255,255,255,.055);
+  --border-subtle:rgba(255,255,255,.065); --border-glow:rgba(0,229,255,.25);
+  --text-primary:#eeeef8; --text-secondary:rgba(255,255,255,.45);
+  --text-muted:rgba(255,255,255,.18); --text-accent:#00e5ff;
+  --status-online:#4eed8a;
+  --shadow-window:0 40px 100px rgba(0,0,0,.75),0 0 0 1px rgba(0,229,255,.035),inset 0 1px 0 rgba(255,255,255,.06);
+  --shadow-fab:0 8px 32px rgba(0,229,255,.3),0 4px 16px rgba(0,0,0,.5);
+  --shadow-send:0 4px 20px rgba(0,229,255,.35);
+  --radius-window:26px; --radius-bubble:18px; --radius-pill:50px;
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-out-soft:cubic-bezier(0.22,1,0.36,1);
+  --ease-in-out:cubic-bezier(0.4,0,0.2,1);
+  --font-head:'Syne',sans-serif; --font-body:'Instrument Sans',sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  font-family:var(--font-body);
+  background: #07070f;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(0,229,255,.05), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 110%, rgba(123,47,190,.07), transparent);
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+
+/* ─── FAB ─── */
+#fab-btn {
+  position:fixed; bottom:32px; right:32px; width:62px; height:62px;
+  border-radius:50%;
+  background:conic-gradient(from 135deg,#00e5ff 0%,#7B2FBE 60%,#00e5ff 100%);
+  border:none; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; color:#fff; z-index:1000;
+  transition:transform .4s var(--ease-spring),box-shadow .3s var(--ease-in-out);
+  box-shadow:var(--shadow-fab);
+  animation:fabBreath 5s ease-in-out infinite;
+}
+#fab-btn::before {
+  content:''; position:absolute; inset:3px; border-radius:50%;
+  background:var(--surface-0); transition:opacity .3s;
+}
+#fab-btn .fab-icon,.fab-icon-close {
+  position:relative; z-index:1; font-size:22px;
+  transition:transform .4s var(--ease-spring),opacity .25s;
+  filter:drop-shadow(0 0 8px rgba(0,229,255,.7));
+}
+#fab-btn .fab-icon-close {
+  position:absolute; z-index:1; font-size:20px; opacity:0;
+  transform:rotate(-90deg) scale(.6);
+}
+#fab-btn:hover {
+  transform:scale(1.1) translateY(-2px);
+  box-shadow:0 12px 48px rgba(0,229,255,.5),0 6px 20px rgba(0,0,0,.5);
+}
+#fab-btn.open { animation:none; }
+#fab-btn.open .fab-icon { opacity:0; transform:rotate(90deg) scale(.6); }
+#fab-btn.open .fab-icon-close { opacity:1; transform:rotate(0deg) scale(1); }
+@keyframes fabBreath {
+  0%,100%{box-shadow:0 8px 32px rgba(0,229,255,.3),0 4px 16px rgba(0,0,0,.5);}
+  40%{box-shadow:0 8px 52px rgba(0,229,255,.55),0 0 0 10px rgba(0,229,255,.06),0 4px 16px rgba(0,0,0,.5);}
+  80%{box-shadow:0 8px 40px rgba(123,47,190,.45),0 0 0 10px rgba(123,47,190,.05),0 4px 16px rgba(0,0,0,.5);}
+}
+
+/* ─── Unread Badge ─── */
+#unread-badge {
+  position:absolute; top:-3px; right:-3px; min-width:20px; height:20px;
+  padding:0 5px; background:linear-gradient(135deg,#ff5f7a,#ff3b5e);
+  border-radius:var(--radius-pill); font-size:10px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; color:#fff;
+  border:2.5px solid #07070f; animation:badgePop .5s var(--ease-spring) both;
+  z-index:2;
+}
+#unread-badge.hidden{display:none;}
+@keyframes badgePop {
+  from{transform:scale(0) rotate(-15deg);opacity:0;}
+  60%{transform:scale(1.2) rotate(5deg);opacity:1;}
+  to{transform:scale(1) rotate(0);opacity:1;}
+}
+
+/* ─── Chat Window ─── */
+#chat-window {
+  position:fixed; bottom:110px; right:32px; width:400px; height:640px;
+  max-height:88vh; background:var(--surface-0);
+  backdrop-filter:blur(40px) saturate(160%);
+  -webkit-backdrop-filter:blur(40px) saturate(160%);
+  border:1px solid var(--border-subtle); border-radius:var(--radius-window);
+  box-shadow:var(--shadow-window); display:flex; flex-direction:column;
+  z-index:999; overflow:hidden; transform-origin:bottom right;
+  transform:scale(.72) translateY(30px); opacity:0; pointer-events:none;
+  transition:transform .45s var(--ease-spring),opacity .3s var(--ease-in-out);
+}
+#chat-window::before {
+  content:''; position:absolute; inset:0; border-radius:var(--radius-window);
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%,rgba(0,229,255,.06),transparent),
+    radial-gradient(ellipse 40% 20% at 80% 100%,rgba(123,47,190,.07),transparent);
+  pointer-events:none; z-index:0;
+}
+#chat-window>*{position:relative;z-index:1;}
+#chat-window.visible{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
+
+/* ─── Header ─── */
+.chat-header {
+  padding:14px 16px; display:flex; align-items:center; gap:11px;
+  border-bottom:1px solid var(--border-subtle);
+  background:rgba(255,255,255,.015); position:relative; flex-shrink:0;
+}
+.chat-header::after {
+  content:''; position:absolute; bottom:-1px; left:10%; right:10%; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.5),rgba(123,47,190,.5),transparent);
+  filter:blur(.5px);
+}
+
+/* Avatar */
+.avatar{position:relative;width:46px;height:46px;border-radius:50%;flex-shrink:0;}
+.avatar-ring {
+  position:absolute; inset:-3px; border-radius:50%;
+  background:conic-gradient(from 0deg,var(--eve-cyan),var(--eve-violet),var(--eve-cyan));
+  animation:avatarSpin 6s linear infinite;
+  mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),white calc(100% - 2.5px));
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),white calc(100% - 2.5px));
+}
+.avatar-inner {
+  position:absolute; inset:0; border-radius:50%;
+  background:linear-gradient(135deg,#00e5ff,#7B2FBE);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-head); font-size:15px; font-weight:900; color:#fff;
+}
+@keyframes avatarSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+.header-info{flex:1;overflow:hidden;}
+.bot-name {
+  font-family:var(--font-head); font-size:15px; font-weight:800;
+  color:var(--text-primary); display:flex; align-items:center; gap:7px;
+}
+.version-tag {
+  font-size:8.5px; font-weight:700; padding:2px 8px;
+  background:linear-gradient(90deg,var(--eve-cyan-dim),var(--eve-violet-dim));
+  color:var(--eve-cyan); border-radius:var(--radius-pill);
+  border:1px solid rgba(0,229,255,.18); letter-spacing:.8px; text-transform:uppercase;
+}
+.bot-status {
+  display:flex; align-items:center; gap:5px; font-size:11px;
+  color:var(--status-online); margin-top:3px; font-family:var(--font-head);
+}
+.status-dot {
+  width:7px; height:7px; background:var(--status-online); border-radius:50%;
+  animation:statusPulse 2.5s ease-in-out infinite;
+}
+@keyframes statusPulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(78,237,138,0);}
+  50%{opacity:.65;}
+  60%{box-shadow:0 0 0 5px rgba(78,237,138,.08);}
+}
+
+.header-actions{display:flex;gap:4px;flex-shrink:0;}
+.header-btn {
+  width:32px; height:32px; border-radius:10px;
+  border:1px solid transparent; background:var(--surface-glass);
+  color:var(--text-secondary); cursor:pointer; display:flex;
+  align-items:center; justify-content:center; font-size:13px;
+  transition:background .2s,border-color .2s,color .2s,transform .2s var(--ease-spring);
+}
+.header-btn:hover{
+  background:var(--surface-hover); border-color:var(--border-subtle);
+  color:var(--text-primary); transform:scale(1.08);
+}
+
+/* ─── Messages ─── */
+#messages {
+  flex:1; overflow-y:auto; padding:14px 13px 8px; display:flex;
+  flex-direction:column; gap:1px; scroll-behavior:smooth;
+}
+#messages::-webkit-scrollbar{width:3px;}
+#messages::-webkit-scrollbar-track{background:transparent;}
+#messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:3px;}
+#messages::-webkit-scrollbar-thumb:hover{background:rgba(0,229,255,.2);}
+
+.date-divider {
+  display:flex; align-items:center; gap:10px; margin:10px 0 14px;
+  font-size:9.5px; color:var(--text-muted); font-family:var(--font-head);
+  letter-spacing:1.5px; text-transform:uppercase;
+}
+.date-divider::before,.date-divider::after{
+  content:''; flex:1; height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-subtle));
+}
+.date-divider::after{background:linear-gradient(270deg,transparent,var(--border-subtle));}
+
+.msg-row{
+  display:flex; align-items:flex-end; gap:8px;
+  animation:msgSlide .45s var(--ease-spring) both;
+}
+.msg-row.user{flex-direction:row-reverse;}
+@keyframes msgSlide{
+  from{opacity:0;transform:translateY(18px) scale(.94);filter:blur(2px);}
+  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+}
+
+.msg-avatar {
+  width:28px; height:28px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:9px;
+  font-weight:900; color:#fff; font-family:var(--font-head); margin-bottom:20px;
+  background:linear-gradient(135deg,#00e5ff,#7B2FBE);
+}
+.msg-avatar.user-av{
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+  font-size:13px; border-radius:10px;
+}
+
+.msg-content{max-width:78%;display:flex;flex-direction:column;}
+.user .msg-content{align-items:flex-end;}
+.bot .msg-content{align-items:flex-start;}
+
+.bubble {
+  display:inline-block; padding:10px 14px; font-size:13.5px; line-height:1.65;
+  color:var(--text-primary); background:var(--surface-2);
+  border:1px solid var(--border-subtle); border-radius:var(--radius-bubble);
+  word-break:break-word; white-space:pre-wrap;
+  transition:background .2s,border-color .2s,box-shadow .2s;
+}
+.bot .bubble{border-bottom-left-radius:4px;}
+.bot .bubble:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.09);}
+.user .bubble{
+  background:linear-gradient(135deg,#00d5f0,#6e28c8); border-color:transparent;
+  color:#fff; border-bottom-right-radius:4px; border-top-right-radius:var(--radius-bubble);
+  box-shadow:0 4px 20px rgba(0,229,255,.2),0 2px 8px rgba(0,0,0,.3);
+}
+.user .bubble:hover{background:linear-gradient(135deg,#00c8e0,#5c1eb4);
+  box-shadow:0 6px 28px rgba(0,229,255,.3);}
+
+.msg-meta{
+  display:flex; align-items:center; gap:6px; margin-top:5px; padding:0 2px;
+  font-size:10px; color:var(--text-muted); font-family:var(--font-head);
+}
+.user .msg-meta{flex-direction:row-reverse;}
+
+.copy-btn {
+  cursor:pointer; opacity:0; transition:opacity .2s,color .2s,background .2s,transform .2s;
+  padding:2px 8px; border-radius:5px; background:rgba(255,255,255,.05);
+  color:var(--text-muted); font-size:9.5px; user-select:none;
+  border:1px solid transparent; font-family:var(--font-head); letter-spacing:.3px;
+}
+.msg-row:hover .copy-btn{opacity:1;}
+.copy-btn:hover{color:var(--eve-cyan);background:var(--eve-cyan-dim);border-color:rgba(0,229,255,.18);}
+.copy-btn.copied{color:var(--status-online);background:rgba(78,237,138,.1);}
+
+/* ─── Typing ─── */
+#typing-indicator{
+  display:none; align-items:flex-end; gap:8px; margin:4px 0 2px;
+  animation:msgSlide .3s var(--ease-out-soft) both;
+}
+#typing-indicator.show{display:flex;}
+.typing-bubble{
+  background:var(--surface-2); border:1px solid var(--border-subtle);
+  border-radius:var(--radius-bubble); border-bottom-left-radius:4px;
+  padding:12px 16px; display:flex; gap:5px; align-items:center;
+}
+.typing-dot{width:6px;height:6px;border-radius:50%;animation:typingBounce 1.4s ease-in-out infinite;}
+.typing-dot:nth-child(1){background:var(--eve-cyan);animation-delay:0s;}
+.typing-dot:nth-child(2){background:#9b6fde;animation-delay:.2s;}
+.typing-dot:nth-child(3){background:var(--eve-violet);animation-delay:.4s;}
+@keyframes typingBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.5;}
+  30%{transform:translateY(-7px);opacity:1;}
+}
+.typing-label{
+  font-size:10px; color:var(--text-muted); font-family:var(--font-head);
+  margin-left:4px; animation:typingFade 1.5s ease-in-out infinite;
+}
+@keyframes typingFade{0%,100%{opacity:.4;}50%{opacity:.9;}}
+
+/* ─── Quick Replies ─── */
+.quick-replies{
+  display:flex; flex-wrap:nowrap; gap:6px; padding:8px 13px 6px;
+  flex-shrink:0; overflow-x:auto; scrollbar-width:none;
+}
+.quick-replies::-webkit-scrollbar{display:none;}
+.chip{
+  padding:6px 14px; border-radius:var(--radius-pill);
+  background:var(--surface-glass); border:1px solid var(--border-subtle);
+  color:var(--text-secondary); font-size:12px; cursor:pointer;
+  white-space:nowrap; font-family:var(--font-body);
+  transition:all .25s var(--ease-spring); flex-shrink:0;
+  position:relative; overflow:hidden;
+}
+.chip::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,var(--eve-cyan-dim),var(--eve-violet-dim));
+  opacity:0; transition:opacity .25s;
+}
+.chip:hover{
+  border-color:rgba(0,229,255,.3); color:var(--eve-cyan);
+  transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,229,255,.15);
+}
+.chip:hover::before{opacity:1;}
+
+/* ─── Footer ─── */
+.chat-footer{
+  padding:10px 13px 14px; flex-shrink:0;
+  background:rgba(255,255,255,.01); border-top:1px solid var(--border-subtle);
+}
+.input-toolbar{display:flex;align-items:center;gap:4px;margin-bottom:8px;padding:0 2px;}
+.toolbar-btn{
+  width:28px;height:28px;border-radius:8px;border:none;background:transparent;
+  color:var(--text-muted);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:13px;
+  transition:background .2s,color .2s,transform .2s;
+}
+.toolbar-btn:hover{background:var(--surface-hover);color:var(--text-secondary);transform:scale(1.1);}
+.toolbar-divider{width:1px;height:16px;background:var(--border-subtle);margin:0 2px;}
+
+.input-wrapper{
+  display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.04);
+  border:1px solid var(--border-subtle); border-radius:14px;
+  padding:9px 9px 9px 15px;
+  transition:border-color .25s,box-shadow .25s,background .25s;
+}
+.input-wrapper:focus-within{
+  border-color:var(--border-glow);
+  box-shadow:0 0 0 3px rgba(0,229,255,.07),inset 0 1px 0 rgba(255,255,255,.04);
+  background:rgba(255,255,255,.055);
+}
+#textInput{
+  flex:1; background:transparent; border:none; outline:none;
+  font-family:var(--font-body); font-size:13.5px; color:var(--text-primary);
+  caret-color:var(--eve-cyan); min-width:0; line-height:1.5;
+}
+#textInput::placeholder{color:var(--text-muted);font-style:italic;}
+
+.input-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;}
+.action-btn{
+  width:36px;height:36px;border-radius:10px;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  background:transparent;color:var(--text-muted);
+  transition:transform .2s var(--ease-spring),color .2s,background .2s;
+}
+.action-btn:hover{color:var(--text-secondary);background:var(--surface-hover);transform:scale(1.1);}
+.action-btn.send{
+  background:linear-gradient(135deg,#00d8f4,#6e28c8); color:#fff;
+  border-radius:11px; box-shadow:var(--shadow-send);
+  transition:transform .25s var(--ease-spring),box-shadow .25s,background .25s;
+}
+.action-btn.send:hover{
+  transform:scale(1.1) rotate(-4deg);
+  box-shadow:0 6px 28px rgba(0,229,255,.5);
+  background:linear-gradient(135deg,#00c8e0,#5c1eb4);
+}
+.action-btn.send:active{transform:scale(.96);}
+
+.powered-by{
+  text-align:center;font-size:9.5px;color:var(--text-muted);margin-top:9px;
+  letter-spacing:.4px;font-family:var(--font-head);
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.powered-by::before,.powered-by::after{
+  content:'';display:inline-block;width:24px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-subtle));
+}
+.powered-by::after{background:linear-gradient(270deg,transparent,var(--border-subtle));}
+.powered-by span{color:var(--eve-cyan);font-weight:700;}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--surface-0);border:1px solid rgba(0,229,255,.2);
+  color:var(--text-primary);font-size:12px;padding:9px 22px;
+  border-radius:var(--radius-pill);opacity:0;
+  transition:opacity .3s var(--ease-out-soft),transform .35s var(--ease-spring);
+  pointer-events:none;z-index:9999;font-family:var(--font-head);white-space:nowrap;
+  box-shadow:0 10px 40px rgba(0,0,0,.5),0 0 0 1px rgba(0,229,255,.05);
+  display:flex;align-items:center;gap:8px;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:480px){
+  #chat-window{right:0;left:0;bottom:0;border-radius:22px 22px 0 0;max-height:90dvh;transform-origin:bottom center;}
+  #fab-btn{right:18px;bottom:20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── FAB ── -->
+<button id="fab-btn" aria-label="Toggle chat" title="Open EVE AI">
+  <div class="fab-icon">✦</div>
+  <div class="fab-icon-close">✕</div>
+  <div id="unread-badge">2</div>
+</button>
+
+<!-- ── Chat Window ── -->
+<div id="chat-window" role="dialog" aria-label="EVE AI Chat">
+
+  <!-- Header -->
+  <header class="chat-header">
+    <div class="avatar">
+      <div class="avatar-ring"></div>
+      <div class="avatar-inner">E</div>
+    </div>
+    <div class="header-info">
+      <div class="bot-name">
+        EVE
+        <span class="version-tag">v2.0</span>
+      </div>
+      <div class="bot-status">
+        <span class="status-dot"></span>
+        Online · Responding instantly
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" title="Search chat">⌕</button>
+      <button class="header-btn" title="Minimize">−</button>
+      <button class="header-btn" title="Close" id="close-btn">✕</button>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div id="messages">
+    <div class="date-divider">Today</div>
+
+    <!-- Bot message -->
+    <div class="msg-row bot" style="animation-delay:.05s">
+      <div class="msg-avatar">E</div>
+      <div class="msg-content">
+        <div class="bubble">Hey there! 👋 I'm <strong style="color:#00e5ff">EVE</strong>, your AI portfolio assistant. Ask me anything about projects, skills, or how to get in touch!</div>
+        <div class="msg-meta">
+          <span>09:41 AM</span>
+          <button class="copy-btn">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User message -->
+    <div class="msg-row user" style="animation-delay:.15s">
+      <div class="msg-avatar user-av">👤</div>
+      <div class="msg-content">
+        <div class="bubble">What tech stack does the portfolio use?</div>
+        <div class="msg-meta">
+          <span>09:42 AM</span>
+          <span class="msg-status">✓✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bot reply -->
+    <div class="msg-row bot" style="animation-delay:.25s">
+      <div class="msg-avatar">E</div>
+      <div class="msg-content">
+        <div class="bubble">Great question! The stack is sleek —<br><br>
+          <code>React 18</code> + <code>TypeScript</code> for the frontend,<br>
+          <code>GSAP</code> for animations, and <code>Framer Motion</code> for transitions. Deployed on <code>Vercel</code> with a <code>Node.js</code> backend for the contact form. ⚡</div>
+        <div class="msg-meta">
+          <span>09:42 AM</span>
+          <button class="copy-btn">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User again -->
+    <div class="msg-row user" style="animation-delay:.3s">
+      <div class="msg-avatar user-av">👤</div>
+      <div class="msg-content">
+        <div class="bubble">Awesome! Can I see live projects?</div>
+        <div class="msg-meta">
+          <span>09:43 AM</span>
+          <span class="msg-status">✓✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing indicator -->
+    <div id="typing-indicator" class="show">
+      <div class="msg-avatar">E</div>
+      <div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <span class="typing-label">EVE is typing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick replies -->
+  <div class="quick-replies">
+    <button class="chip"><span>🔗 View Projects</span></button>
+    <button class="chip"><span>📬 Contact</span></button>
+    <button class="chip"><span>🛠 Skills</span></button>
+    <button class="chip"><span>📄 Resume</span></button>
+    <button class="chip"><span>🎨 Case Studies</span></button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="chat-footer">
+    <div class="input-toolbar">
+      <button class="toolbar-btn" title="Attach file">📎</button>
+      <button class="toolbar-btn" title="Emoji">😊</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" title="Voice input">🎤</button>
+    </div>
+    <div class="input-wrapper">
+      <input id="textInput" type="text" placeholder="Ask EVE anything…" autocomplete="off">
+      <div class="input-actions">
+        <button class="action-btn" title="Voice">🎤</button>
+        <button class="action-btn send" title="Send message" id="send-btn">➤</button>
+      </div>
+    </div>
+    <div class="powered-by">Powered by <span>Claude AI</span></div>
+  </footer>
+</div>
+
+<!-- Toast -->
+<div id="toast">
+  <span class="toast-icon">✓</span>
+  Copied to clipboard!
+</div>
+
+<script>
+const fab = document.getElementById('fab-btn');
+const win = document.getElementById('chat-window');
+const badge = document.getElementById('unread-badge');
+const closeBtn = document.getElementById('close-btn');
+const sendBtn = document.getElementById('send-btn');
+const input = document.getElementById('textInput');
+const messages = document.getElementById('messages');
+const typing = document.getElementById('typing-indicator');
+const toast = document.getElementById('toast');
+
+// Toggle chat
+fab.addEventListener('click', () => {
+  const isOpen = win.classList.toggle('visible');
+  fab.classList.toggle('open', isOpen);
+  if (isOpen) badge.classList.add('hidden');
+  if (isOpen) setTimeout(() => messages.scrollTop = messages.scrollHeight, 100);
+});
+
+closeBtn.addEventListener('click', () => {
+  win.classList.remove('visible');
+  fab.classList.remove('open');
+});
+
+// Send message
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  // User bubble
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `
+    <div class="msg-avatar user-av">👤</div>
+    <div class="msg-content">
+      <div class="bubble">${text}</div>
+      <div class="msg-meta">
+        <span>Just now</span>
+        <span class="msg-status">✓✓</span>
+      </div>
+    </div>`;
+
+  typing.classList.remove('show');
+  messages.insertBefore(row, typing);
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+
+  // Re-show typing
+  setTimeout(() => {
+    typing.classList.add('show');
+    messages.scrollTop = messages.scrollHeight;
+  }, 400);
+}
+
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+// Copy buttons
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('copy-btn')) {
+    const bubble = e.target.closest('.msg-content').querySelector('.bubble');
+    navigator.clipboard.writeText(bubble.innerText).catch(()=>{});
+    e.target.textContent = 'Copied!';
+    e.target.classList.add('copied');
+    showToast('✓', 'Copied to clipboard!');
+    setTimeout(() => { e.target.textContent = 'Copy'; e.target.classList.remove('copied'); }, 2000);
+  }
+});
+
+// Quick reply chips
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    input.value = chip.textContent.trim();
+    input.focus();
+  });
+});
+
+// Toast
+function showToast(icon, msg, type = '') {
+  toast.innerHTML = `<span class="toast-icon">${icon}</span>${msg}`;
+  toast.className = 'show ' + type;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.className = '', 2200);
+}
+
+// Auto-open after 1.5s for demo
+setTimeout(() => {
+  win.classList.add('visible');
+  fab.classList.add('open');
+  badge.classList.add('hidden');
+}, 800);
+</script>
+</body>
+</html>
